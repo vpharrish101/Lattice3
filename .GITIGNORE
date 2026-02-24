@@ -1,0 +1,10 @@
+/data
+*train/
+*test/
+*val/
+
+/models
+
+*.ipynb
+*.pyc
+

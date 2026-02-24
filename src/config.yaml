@@ -1,0 +1,117 @@
+GraphTFConv:
+  device: "cuda"
+  epochs: 10
+  data_root: "D:/Python311/Pets/GraphFold/data"
+  checkpoint: "D:/Python311/Pets/GraphFold/models/GraphTFConv_finetuned.pt"
+  lr: 3.5e-4
+
+  dataloader:
+    train_batch_size: 4
+    val_batch_size: 2
+    test_batch_size: 2
+    shuffle: true
+    num_workers: 0
+
+  optimizer:
+    type: "AdamW"
+    lr: 1.5e-4
+    weight_decay: 1e-4
+
+  scheduler:
+    type: "CosineAnnealingLR"
+    T_max: 10
+
+  loss: "CrossEntropyLoss"
+
+
+ProtBERT:
+  device: "auto"  
+  data_root: "D:/Python311/Pets/GraphT/data"
+  model_name: "facebook/esm2_t6_8M_UR50D"
+  model_cache_dir: "D:/Python311/Pets/GraphT/models"
+
+  dataloader:
+    batch_size: 6
+    shuffle: false
+    num_workers: 4
+
+  max_len: 1024
+  autocast_dtype: "float16"
+
+
+ViT_embed:
+  device: "auto"
+  data_root: "D:/Python311/Pets/GraphFold/data"
+  checkpoint: "D:/Python311/Pets/GraphFold/models/ViT_finetuned.pt"
+
+  dataloader:
+    batch_size: 32
+
+
+
+ViT_train:
+  device: "cuda"
+  epochs: 5
+  data_root: "D:/Python311/Pets/GraphFold/data"
+  checkpoint: "D:/Python311/Pets/GraphFold/models/ViT_finetuned.pt"
+
+  backbone:
+    name: "vit_small_patch16_224"
+    pretrained: true
+    unfreeze_last_blocks: 3
+
+  dataloader:
+    train_batch_size: 4
+    val_batch_size: 2
+
+  optimizer:
+    lr: 3e-4
+    weight_decay: 5e-2
+
+  num_classes: 4
+  projection_dim: 320
+
+
+Engine:
+  device: "auto"
+
+  global:
+    max_len: 1024
+    num_classes: 4
+    embed_dim: 320
+
+  ViT_train:
+    projection_dropout: 0.3
+
+  TFConv:
+    in_channels: 320
+    heads: 4
+    dropout: 0.1
+    fusion_dropout: 0.118
+    conv_type: "SAGEConv"
+    norm_type: "layer_norm"
+
+
+DataUtils:
+  data_root: "D:/Python311/Pets/GraphFold/data"
+
+  graph:
+    dist_threshold: 8.0
+    max_residues: 600
+    edge_cap: 20000
+    granularity: "CA"
+
+
+Preprocessor:
+  data_root: "D:/Python311/Pets/GraphFold/data"
+
+  graph:
+    dist_threshold: 8.0
+    max_residues: 600
+    edge_cap: 20000
+    granularity: "CA"
+
+  splits:
+    - train
+    - val
+    - test
