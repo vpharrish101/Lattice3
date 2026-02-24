@@ -1,2 +1,39 @@
 # Lattice3
-An end-to-end tri-modal deep learning pipeline for protein fold classification integrating structural contact maps (ViT), sequence embeddings (ProtBERT), and graph transformer convolutions (GPSConv), with MLflow tracking and Dockerized reproducibility.
+
+What it is: An end-to-end tri-modal deep learning pipeline for protein fold classification, integrating: ViT, BERT and GPSConv (Graph Transformer), with MLflow tracking and Dockerized reproducibility.
+
+What it does: Predicts fold structure classifications, for CATH domain proteins.
+
+###  Architecture: -
+<img width="842" height="240" alt="image" src="https://github.com/user-attachments/assets/459862f1-1248-456c-9224-7a337e555404" />
+
+How it works: -
+  1. The preprocessing script genrates the required data (check README) 
+  2. ViT is finetuned with the dense contact maps, preferraly by unfreezing last 2 or 3 blocks.
+  3. ViT is now used to generate dense embeddings from contact maps(dense)
+  4. ProtBERT is used to generate dense embeddings from contact maps(dense) per residue (NOT POOLED)
+  5. Graph Transformer block (TransformerConv) takes in ProtBERT embeddings as edge index, sparse contact map as node_features, and the labels, and produces a 320 dim embedding
+  6. ViT and TFConv's embeddings are cross queried (Graph=Q,ViT=K/V) and the final output is logits from FFN.
+
+| Component | Configuration | Purpose |
+| :--- | :--- | :--- |
+| **(BERT)Sequence Encoder** | HuggingFace `ProtBERT` ( FP16, Max Len: 1024 ) | Acts as a frozen language model to extract per-residue  features from raw FASTA sequences. |
+| **(ViT)Structural Encoder** | timm `vit_small_patch16_224` | Processes dense contact maps to generate a global 320-dimensional structural embedding. |
+| **(TransformerConv) Graph Transformer** | PyG `GPSConv` ( 2 Layers ) + `SAGEConv` | Captures topological layout using sparse maps (edges) and ProtBERT embeddings (nodes) to produce a 320-dim graph embedding. |
+| **Multimodal Fusion** | `nn.MultiheadAttention` ( dim=320, heads=4 ) | Cross-queries the topological graph representation (Query) against the structural ViT embedding (Key/Value). |
+| **Classifier output** | Linear FFN ( dropout=0.118, out_features=4 ) | Maps the fused 320-dimensional multimodal representation to the final 4-class protein fold logits. |
+
+
+### Structure Dynamics: -
+
+The reason I engineered this tri-modal architectue: -
+  1. Global spatial geometry: ViT encodes global spatial geometry, derived from 2D spatial relationships. This gives us an idea of how the overall protein itself is connected on a higher level
+  2. Context-based sequence sematics: BERT encodes biochemical and evolutionary information mainly. This gives an idea of what the residues actually are.
+  3. Topological structure: Graph Transformer (GPSConv) encodes structural topology and interaction contexts. It understands how residues are connected, which ones interact, and how structural neighborhoods are organized within the protein.
+  4. Graph Transformer's embeddings queries the ViT embedding to produce a fused structural representation combining topology and geometry.
+  5. The result is a latent space where structure, sematics and topology are unified and represented.
+
+
+### Results: -
+
+1. 
