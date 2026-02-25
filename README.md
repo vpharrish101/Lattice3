@@ -8,11 +8,11 @@ What it does: Predicts fold structure classifications, for CATH domain proteins.
 <img width="842" height="240" alt="image" src="https://github.com/user-attachments/assets/459862f1-1248-456c-9224-7a337e555404" />
 
 How it works: -
-  1. The preprocessing script genrates the required data (check README) 
+  1. The preprocessing script genrates the required data.
   2. ViT is finetuned with the dense contact maps, preferraly by unfreezing last 2 or 3 blocks.
-  3. ViT is now used to generate dense embeddings from contact maps(dense)
-  4. ProtBERT is used to generate dense embeddings from contact maps(dense) per residue (NOT POOLED)
-  5. Graph Transformer block (TransformerConv) takes in ProtBERT embeddings as edge index, sparse contact map as node_features, and the labels, and produces a 320 dim embedding
+  3. ViT is now used to generate dense embeddings from contact maps(dense).
+  4. ProtBERT is used to generate dense embeddings from contact maps(dense) per residue (NOT POOLED).
+  5. Graph Transformer block (TransformerConv) takes in ProtBERT embeddings as node_features, sparse contact map as edge_index, and the labels, and produces a 320 dim embedding.
   6. ViT and TFConv's embeddings are cross queried (Graph=Q,ViT=K/V) and the final output is logits from FFN.
 
 | Component | Configuration | Purpose |
@@ -36,4 +36,17 @@ The reason I engineered this tri-modal architectue: -
 
 ### Results: -
 
-1. 
+1. Accuracy: -
+   <img width="1338" height="368" alt="image" src="https://github.com/user-attachments/assets/b7c47202-1d90-42a3-a0f2-f3d71065d65e" />
+2. Macro F1: -
+   <img width="1341" height="368" alt="image" src="https://github.com/user-attachments/assets/6eadcc02-cdaf-4eef-bf18-eeab4bb19912" />
+
+| Model        | Test Accuracy (%) | Macro F1 |
+|--------------|------------------|----------|
+| ViT          | 83.5             | 0.82     |
+| ProtBERT     | 84.2             | 0.83     |
+| Fusion (ViT + GPSConv) | 89.0             | 0.88     |
+
+a. Predicted accuracy and macro-F1 from ViT model alone shows that global reasoning contains class information to an extent
+b. Same inference from BERT model too, as protein chemistry and local interactivity carries class information too. 
+c. The fusion model outperforms by alomst 5-6%, as it provides a latent space where local and global trends are represented unified, hence the accuracy boost.
