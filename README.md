@@ -11,13 +11,13 @@ How it works: -
   1. The preprocessing script genrates the required data.
   2. ViT is finetuned with the dense contact maps, preferraly by unfreezing last 2 or 3 blocks.
   3. ViT is now used to generate dense embeddings from contact maps(dense).
-  4. ProtBERT is used to generate dense embeddings from contact maps(dense) per residue (NOT POOLED).
+  4. ProtBERT is used to generate dense embeddings from FASTA sequences per residue (NOT POOLED).
   5. Graph Transformer block (TransformerConv) takes in ProtBERT embeddings as node_features, sparse contact map as edge_index, and the labels, and produces a 320 dim embedding.
   6. ViT and TFConv's embeddings are cross queried (Graph=Q,ViT=K/V) and the final output is logits from FFN.
 
 | Component | Configuration | Purpose |
 | :--- | :--- | :--- |
-| **(BERT)Sequence Encoder** | HuggingFace `ProtBERT` ( FP16, Max Len: 1024 ) | Acts as a frozen language model to extract per-residue  features from raw FASTA sequences. |
+| **(BERT)Sequence Encoder** | HuggingFace `ProtBERT` ( FP16, Max Len: 1024 ) | Acts as a frozen language model to extract per-residue features from raw FASTA sequences. |
 | **(ViT)Structural Encoder** | timm `vit_small_patch16_224` | Processes dense contact maps to generate a global 320-dimensional structural embedding. |
 | **(TransformerConv) Graph Transformer** | PyG `GPSConv` ( 2 Layers ) + `SAGEConv` | Captures topological layout using sparse maps (edges) and ProtBERT embeddings (nodes) to produce a 320-dim graph embedding. |
 | **Multimodal Fusion** | `nn.MultiheadAttention` ( dim=320, heads=4 ) | Cross-queries the topological graph representation (Query) against the structural ViT embedding (Key/Value). |
