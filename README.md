@@ -10,7 +10,7 @@ What it does: Predicts fold structure classifications, for CATH domain proteins.
 How it works: -
   1. The preprocessing script genrates the required data.
   2. ViT is finetuned with the dense contact maps, preferraly by unfreezing last 2 or 3 blocks.
-  3. ViT is now used to generate dense embeddings from contact maps(dense).
+  3. ViT is now used to generate dense embeddings from contact maps (dense).
   4. ProtBERT is used to generate dense embeddings from FASTA sequences per residue (NOT POOLED).
   5. Graph Transformer block (TransformerConv) takes in ProtBERT embeddings as node_features, sparse contact map as edge_index, and the labels, and produces a 320 dim embedding.
   6. ViT and TFConv's embeddings are cross queried (Graph=Q,ViT=K/V) and the final output is logits from FFN.
