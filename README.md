@@ -1,4 +1,4 @@
-# Lattice3
+# Lattice3 
 
 What it is: An end-to-end tri-modal deep learning pipeline for protein fold classification, integrating: ViT, BERT and GPSConv (Graph Transformer), with MLflow tracking and Dockerized reproducibility.
 
