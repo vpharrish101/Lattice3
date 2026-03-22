@@ -5,41 +5,41 @@ import mlflow
 
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer,AutoModel
-from data.DatasetLoader import ESM_Dataset
-from Engine.engine import Engine_ProtBERT_emb
-from utils import load_cfg
+from src.data.DatasetLoader import ESM_Dataset
+from src.Engine.engine import Engine_ProtBERT_emb
+from src.utils import load_cfg
+
 
 cfg=load_cfg()
 
 DEVICE=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DATA_ROOT=cfg["ProtBERT"]["data_root"]
 MODEL_NAME=cfg["ProtBERT"]["model_name"]
-BATCH_SIZE=cfg["ProtBERT"]["epochs"]
+BATCH_SIZE=cfg["ProtBERT"]["dataloader"]["batch_size"]
 
 
-def ProtBERT_generate_embedding():
+def load_ProtBERT():
+    from transformers import AutoConfig, AutoModel,AutoTokenizer
+    path="models/esm2"
+    tokenizer=AutoTokenizer.from_pretrained(path)
+    config=AutoConfig.from_pretrained(path)
+    model=AutoModel.from_config(config).to(DEVICE)
+    model.load_state_dict(torch.load("models/esm2_model.pt",map_location=DEVICE))
+    return Engine_ProtBERT_emb(tokenizer,model).to(DEVICE)
 
+
+def ProtBERT_generate_embedding(model):
     mlflow.set_experiment("ProtBERT_embedding_gen")
-
     with mlflow.start_run():
-
         mlflow.log_params(
             params={
                 "model_name":MODEL_NAME,
                 "batch_size":BATCH_SIZE,
                 "device":str(DEVICE),
-                "num_workers":cfg["ProtBERT"]["dataloader"]["num_workers"]
-            },synchronous=True
-        )
+                "num_workers":cfg["ProtBERT"]["dataloader"]["num_workers"]},synchronous=True)
 
         start_time=time.time()
         total_samples=0
-
-        model=Engine_ProtBERT_emb(
-            AutoTokenizer.from_pretrained(MODEL_NAME,cache_dir=r"D:\Python311\Pets\GraphT\models"),
-            AutoModel.from_pretrained(MODEL_NAME,cache_dir=r"D:\Python311\Pets\GraphT\models")
-        ).to(DEVICE)
-        
         model.eval()
 
         for split in ["train","val","test"]:
@@ -70,3 +70,12 @@ def ProtBERT_generate_embedding():
         runtime=time.time()-start_time
         mlflow.log_metric("total_samples_processed",total_samples)
         mlflow.log_metric("runtime_seconds",runtime)
+
+
+def ProtBERT_embed_single(model,sequence: str):
+    with torch.no_grad(): emb=model([sequence])[0]
+    return emb
+
+
+
+

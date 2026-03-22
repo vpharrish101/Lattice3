@@ -7,4 +7,5 @@
 
 *.ipynb
 *.pyc
-
+*.db
+__init__.py

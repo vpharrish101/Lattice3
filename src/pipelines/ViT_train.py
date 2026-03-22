@@ -2,25 +2,22 @@ import os
 import time
 import torch
 import timm
-import yaml
 import mlflow
 import mlflow.pytorch
 import torch.nn as nn
 
 from torch.utils.data import DataLoader
-from data.DatasetLoader import ViT_train_Dataset
-from Engine.engine import Engine_ViT_train
-from utils import load_cfg
+from src.data.DatasetLoader import ViT_train_Dataset
+from src.Engine.engine import Engine_ViT_train
+from src.utils import load_cfg
 
 
-###
 cfg=load_cfg()
 
 DATA_ROOT=cfg["ViT_train"]["data_root"]
 DEVICE=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 EPOCHS=cfg["ViT_train"]["epochs"]
 CHECKPOINT=cfg["ViT_train"]["checkpoint"]
-###
 
 
 def ViT_finetune():
@@ -35,12 +32,9 @@ def ViT_finetune():
                 "lr":cfg["ViT_train"]["optimizer"]["lr"],
                 "weight_decay":cfg["ViT_train"]["optimizer"]["weight_decay"],
                 "backbone":"vit_small_patch16_224",
-                "unfreeze_blocks":cfg["ViT_train"]["backbone"]["unfreeze_last_blocks"]
-            },synchronous=True
-        )
+                "unfreeze_blocks":cfg["ViT_train"]["backbone"]["unfreeze_last_blocks"]},synchronous=True)
 
         start_time=time.time()
-
         ViT_model=timm.create_model("vit_small_patch16_224",pretrained=True,num_classes=0)
 
         for p in ViT_model.parameters():
@@ -117,6 +111,11 @@ def ViT_finetune():
 
             val_acc=val_correct/val_total
 
+            print("train_loss",total_loss)
+            print("train_acc",train_acc)
+            print("val_acc",val_acc)
+
+
             mlflow.log_metric("train_loss",total_loss,step=epoch)
             mlflow.log_metric("train_acc",train_acc,step=epoch)
             mlflow.log_metric("val_acc",val_acc,step=epoch)
@@ -124,11 +123,11 @@ def ViT_finetune():
         runtime=time.time()-start_time
         mlflow.log_metric("runtime_seconds",runtime)
 
-        mlflow.pytorch.log_model(model,artifact_path="model") #type:ignore
+        mlflow.pytorch.log_model(model,name="model") #type:ignore
 
         w=model.state_dict()
         w.pop("classification_head.weight")
         w.pop("classification_head.bias")
+
+        os.makedirs(os.path.dirname(CHECKPOINT),exist_ok=True)
         torch.save(w,CHECKPOINT)
-
-

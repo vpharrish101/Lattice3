@@ -1,8 +1,8 @@
-from data import preprocessor
-from pipelines import ViT_train
-from pipelines import ViT_emb
-from pipelines import ProtBERT
-from pipelines import GraphTf
+from src.data import preprocessor
+from src.pipelines import ViT_train
+from src.pipelines import ViT_emb
+from src.pipelines import ProtBERT
+from src.pipelines import GraphTf
 
 """
 How this architecture works: -
@@ -18,9 +18,18 @@ How this architecture works: -
 
     6. ViT and TFConv's embeddings are cross queried (Graph=Q,ViT=K/V) and the final output is logits from FFN.
 """
+
 def main():
     preprocessor.preprocess()
     ViT_train.ViT_finetune()
-    ViT_emb.ViT_generate_embeddings()
-    ProtBERT.ProtBERT_generate_embedding()
-    GraphTf.TFConv_train()
+    ViT_emb.ViT_generate_embeddings(ViT_emb.load_ViT())
+    ProtBERT.ProtBERT_generate_embedding(ProtBERT.load_ProtBERT())
+    GraphTf.TFConv_train(GraphTf.load_GraphTf())
+
+if __name__=="__main__":
+    main()
+
+
+
+    
+

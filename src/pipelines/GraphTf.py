@@ -6,26 +6,30 @@ import mlflow
 import mlflow.pytorch
 
 from torch_geometric.loader import DataLoader
-from data.DatasetLoader import GT_Dataset
-from Engine.engine import Engine_TFConv
-from utils import load_cfg
+from src.data.DatasetLoader import GT_Dataset
+from src.Engine.engine import Engine_TFConv
+from src.utils import load_cfg
 
 
 cfg=load_cfg()
 
-DEVICE=torch.device("cuda")
+DEVICE=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 EPOCHS=cfg["GraphTFConv"]["epochs"]
 DATA_ROOT=cfg["GraphTFConv"]["data_root"]
 CHECKPOINT=cfg["GraphTFConv"]["checkpoint"]
 
+def load_GraphTf():
+    model=Engine_TFConv().to(DEVICE)
+    if os.path.exists(CHECKPOINT):
+        checkpoint=torch.load(CHECKPOINT,map_location="cpu",weights_only=True)
+        model.load_state_dict(checkpoint)
+    model.eval()
+    return model
 
 
-def TFConv_train():
-
+def TFConv_train(model):
     mlflow.set_experiment("GraphTFConv_train")
-
     with mlflow.start_run():
-
         mlflow.log_params(
             params={
                 "epochs":cfg["GraphTFConv"]["epochs"],
@@ -34,9 +38,7 @@ def TFConv_train():
                 "train_batch_size":4,
                 "val_batch_size":2,
                 "model":"Engine_TFConv",
-                "scheduler":"CosineAnnealingLR"
-            },synchronous=True
-        )
+                "scheduler":"CosineAnnealingLR"},synchronous=True)
 
         start_time=time.time()
 
@@ -45,17 +47,15 @@ def TFConv_train():
             batch_size=4,
             shuffle=True,
             num_workers=0)
-
+        
         valSplit=DataLoader(
             GT_Dataset(os.path.join(DATA_ROOT,"val")),
             batch_size=2,
             shuffle=True)
 
-        
-        model=Engine_TFConv().to(DEVICE)
 
         loss_fn=nn.CrossEntropyLoss()
-        lr=cfg["GraphTFConv"]["lr"]
+        lr=cfg["GraphTFConv"]["optimizer"]["lr"]
 
         optimizer=torch.optim.AdamW( #type:ignore
             model.parameters(),
@@ -123,33 +123,17 @@ def TFConv_train():
 
         runtime=time.time()-start_time
         mlflow.log_metric("runtime_seconds",runtime)
-
         mlflow.pytorch.log_model(model,artifact_path="model") #type:ignore
-
         torch.save(model.state_dict(),CHECKPOINT)
-            
 
-'''
-batch is a PyG dataset that contains: -
 
-edge_index,
-x (node features),
-batch (seq)
-vit_emb
-'''
+def TFConv_predict(model,edge_index,x,vit_emb):
+    
+    edge_index=edge_index.to(DEVICE)
+    x=x.to(DEVICE)
+    vit_emb=vit_emb.to(DEVICE)
 
-def TFConv_predict(batch):
+    batch=torch.zeros(x.shape[0],dtype=torch.long).to(DEVICE)
 
-    model=Engine_TFConv().to(DEVICE)
-    checkpoint=torch.load(CHECKPOINT,map_location="cpu")
-    model.load_state_dict(checkpoint)
-    model.eval()
-
-    with torch.no_grad():
-        batch=batch.to(DEVICE)
-        logits=model(
-            batch.edge_index,
-            batch.x,
-            batch.batch,
-            batch.vit_emb)
-        return torch.argmax(logits,dim=1)
+    with torch.no_grad(): logits=model(edge_index,x,batch,vit_emb.unsqueeze(0))
+    return torch.argmax(logits,dim=1).item()
