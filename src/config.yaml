@@ -1,9 +1,11 @@
+global:
+  data_root: "data"
+  model_root: "models"
+  device: "auto"
+
 GraphTFConv:
-  device: "cuda"
   epochs: 10
-  data_root: "D:/Python311/Pets/GraphFold/data"
-  checkpoint: "D:/Python311/Pets/GraphFold/models/GraphTFConv_finetuned.pt"
-  lr: 3.5e-4
+  checkpoint: "models/GraphTFConv_finetuned.pt"
 
   dataloader:
     train_batch_size: 4
@@ -11,11 +13,12 @@ GraphTFConv:
     test_batch_size: 2
     shuffle: true
     num_workers: 0
+  data_root: "src/data"
 
   optimizer:
     type: "AdamW"
-    lr: 1.5e-4
-    weight_decay: 1e-4
+    lr: 0.00015
+    weight_decay: 0.0001
 
   scheduler:
     type: "CosineAnnealingLR"
@@ -25,10 +28,9 @@ GraphTFConv:
 
 
 ProtBERT:
-  device: "auto"  
-  data_root: "D:/Python311/Pets/GraphT/data"
   model_name: "facebook/esm2_t6_8M_UR50D"
-  model_cache_dir: "D:/Python311/Pets/GraphT/models"
+  model_cache_dir: "models"
+  data_root: "src/data"
 
   dataloader:
     batch_size: 6
@@ -40,20 +42,17 @@ ProtBERT:
 
 
 ViT_embed:
-  device: "auto"
-  data_root: "D:/Python311/Pets/GraphFold/data"
-  checkpoint: "D:/Python311/Pets/GraphFold/models/ViT_finetuned.pt"
+  checkpoint: "models/ViT_finetuned.pt"
+  data_root: "src/data"
 
   dataloader:
     batch_size: 32
 
 
-
 ViT_train:
-  device: "cuda"
   epochs: 5
-  data_root: "D:/Python311/Pets/GraphFold/data"
-  checkpoint: "D:/Python311/Pets/GraphFold/models/ViT_finetuned.pt"
+  data_root: "src/data"
+  checkpoint: "models/ViT_finetuned.pt"
 
   backbone:
     name: "vit_small_patch16_224"
@@ -65,16 +64,14 @@ ViT_train:
     val_batch_size: 2
 
   optimizer:
-    lr: 3e-4
-    weight_decay: 5e-2
+    lr: 0.0003
+    weight_decay: 0.05
 
   num_classes: 4
   projection_dim: 320
 
 
 Engine:
-  device: "auto"
-
   global:
     max_len: 1024
     num_classes: 4
@@ -93,8 +90,6 @@ Engine:
 
 
 DataUtils:
-  data_root: "D:/Python311/Pets/GraphFold/data"
-
   graph:
     dist_threshold: 8.0
     max_residues: 600
@@ -103,13 +98,12 @@ DataUtils:
 
 
 Preprocessor:
-  data_root: "D:/Python311/Pets/GraphFold/data"
-
   graph:
     dist_threshold: 8.0
     max_residues: 600
     edge_cap: 20000
     granularity: "CA"
+  data_root: "src/data"
 
   splits:
     - train
