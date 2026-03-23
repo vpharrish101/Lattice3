@@ -4,7 +4,6 @@ import torch
 from graphein.protein.config import ProteinGraphConfig
 from Bio.Data.PDBData import protein_letters_3to1
 
-DATA_ROOT=r"D:\Python311\Pets\GraphFold\data"
 
 DIST_THRESHOLD=8.0
 MAX_RESIDUES=600
