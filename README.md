@@ -69,10 +69,12 @@ The reason I engineered this tri-modal architectue: -
 | ViT          | 83.5             | 0.82     |
 | ProtBERT     | 84.2             | 0.83     |
 | Fusion (ViT + GPSConv) | 89.0             | 0.88     |
+3. a. Predicted accuracy and macro-F1 from ViT model alone shows that global reasoning contains class information to an extent.\
+    b. Same inference from BERT model too, as protein chemistry and local interactivity carries class information too. \
+    c. The fusion model outperforms by alomst 5-6%, as it provides a latent space where local and global trends are represented unified, hence the accuracy boost.
 
-a. Predicted accuracy and macro-F1 from ViT model alone shows that global reasoning contains class information to an extent.\
-b. Same inference from BERT model too, as protein chemistry and local interactivity carries class information too. \
-c. The fusion model outperforms by alomst 5-6%, as it provides a latent space where local and global trends are represented unified, hence the accuracy boost.
+4. FastAPI pipeline: -
+   <img width="1919" height="1138" alt="Screenshot 2026-03-24 113738" src="https://github.com/user-attachments/assets/fee521a6-cfb1-48c6-acd7-3e9310db5b4e" />
 
 
 
