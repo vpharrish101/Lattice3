@@ -1,6 +1,6 @@
 # Lattice3 
 
-What it is: An end-to-end tri-modal deep learning pipeline for protein fold classification, integrating: ViT, BERT and GPSConv (Graph Transformer), with MLflow tracking and Dockerized reproducibility.
+What it is: An end-to-end tri-modal deep learning pipeline for protein fold classification, integrating: ViT, BERT and GPSConv (Graph Transformer), with MLOps-centric design (Advanced ETL pipelines and scalability-friendly design) and Dockerized reproducibility.
 
 What it does: Predicts protein structure classifications, for CATH domain proteins.
 
