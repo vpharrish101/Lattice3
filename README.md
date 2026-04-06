@@ -6,7 +6,7 @@ What it does: Predicts protein structure classifications, for CATH domain protei
 
 ###  Architecture: -
 <img width="842" height="240" alt="image" src="https://github.com/user-attachments/assets/459862f1-1248-456c-9224-7a337e555404" />
-
+<AI Usage: some parts of the ETL are generated using LLM's, but the rest of the pipeline and system is largely designed by me>
 ```
 How it works: -
   1. The preprocessing script genrates the required data.
@@ -23,7 +23,7 @@ How it works: -
 Lattice3 is built as a **stage-decoupled system with materialized representations**, not a monolithic end-to-end pipeline.
 
 - **Modular execution**  
-    Stages (Preprocess → ViT → ProtBERT → GraphTF) run independently with persisted `.pt` outputs. Expensive embeddings are computed once and reused.
+    Stages (Preprocess -> ViT -> ProtBERT -> GraphTF) run independently with persisted `.pt` outputs. Expensive embeddings are computed once and reused.
 
 - **Representation-first workflow**  
     Samples are incrementally enriched (`dense_map → esm_residue_emb → vit_struct_emb`), enabling partial recomputation without full pipeline resets.
@@ -80,7 +80,7 @@ The reason I engineered this tri-modal architectue: -
 
 
 
-### Misc informations: -
+### Misc information: -
 
 | Component | Configuration | Purpose |
 | :--- | :--- | :--- |
