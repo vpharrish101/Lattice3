@@ -5,8 +5,9 @@ What it is: An end-to-end tri-modal deep learning pipeline for protein fold clas
 What it does: Predicts protein structure classifications, for CATH domain proteins.
 
 ###  Architecture: -
-<img width="842" height="240" alt="image" src="https://github.com/user-attachments/assets/459862f1-1248-456c-9224-7a337e555404" />
-<AI Usage: some parts of the ETL are generated using LLM's, but the rest of the pipeline and system is largely designed by me>
+<img width="842" height="240" alt="image" src="https://github.com/user-attachments/assets/459862f1-1248-456c-9224-7a337e555404" /> \
+<sub>AI Usage: some parts of the ETL/Data preprocessing are generated using LLM's, but the rest of the pipeline and system is largely designed by me.</sub>
+
 ```
 How it works: -
   1. The preprocessing script genrates the required data.
