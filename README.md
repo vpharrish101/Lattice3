@@ -10,13 +10,14 @@ What it does: Predicts protein structure classifications, for CATH domain protei
 
 ```
 How it works: -
-  1. The preprocessing script genrates the required data.
-  2. ViT is finetuned with the dense contact maps, preferraly by unfreezing last 2 or 3 blocks.
-  3. ViT is now used to generate dense embeddings from contact maps.
-  4. ProtBERT is used to generate dense embeddings from FASTA sequences per residue (NOT POOLED).
-  5. Graph Transformer block (TransformerConv) takes in ProtBERT embeddings as node_features, sparse contact map as edge_index,
-     and the labels, and produces a 320 dim embedding.
-  6. ViT and TFConv's embeddings are cross queried (Graph=Q,ViT=K/V) and the final output is logits from FFN.
+
+1. The preprocessing stage builds aligned structural (contact maps) and sequence (FASTA) inputs for each protein.
+2. A ViT is fine-tuned on dense contact maps (typically unfreezing the last few blocks) to learn global spatial structure.
+3. In parallel, ProtBERT generates per-residue embeddings from FASTA sequences (kept unpooled to preserve token-level information).
+4. A Graph Transformer (TransformerConv) uses ProtBERT embeddings as node features and the sparse contact map as edges to
+   model residue-level interactions, producing a 320-dim topology-aware embedding.
+5. The graph embedding (topology) queries the ViT embedding (geometry) via cross-attention (Graph=Q, ViT=K/V), and the fused
+   representation is passed through an FFN to produce final logits.
 ```
 
 ## MLOps Design
