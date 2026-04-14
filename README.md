@@ -13,8 +13,8 @@ How it works: -
 
 1. The preprocessing stage builds aligned structural (contact maps) and sequence (FASTA) inputs for each protein.
 2. A ViT is fine-tuned on dense contact maps (typically unfreezing the last few blocks) to learn global spatial structure.
-3. In parallel, ProtBERT generates per-residue embeddings from FASTA sequences (kept unpooled to preserve token-level information).
-4. A Graph Transformer (TransformerConv) uses ProtBERT embeddings as node features and the sparse contact map as edges to
+3. In parallel, BERT generates per-residue embeddings from FASTA sequences (kept unpooled to preserve token-level information).
+4. A Graph Transformer (TransformerConv) uses BERT embeddings as node features and the sparse contact map as edges to
    model residue-level interactions, producing a 320-dim topology-aware embedding.
 5. The graph embedding (topology) queries the ViT embedding (geometry) via cross-attention (Graph=Q, ViT=K/V), and the fused
    representation is passed through an FFN to produce final logits.
@@ -25,7 +25,7 @@ How it works: -
 Lattice3 is built as a **stage-decoupled system with materialized representations**, not a monolithic end-to-end pipeline.
 
 - **Modular execution**  
-    Stages (Preprocess -> ViT -> ProtBERT -> GraphTF) run independently with persisted `.pt` outputs. Expensive embeddings are computed once and reused.
+    Stages (Preprocess -> ViT -> ESM2 -> GraphTF) run independently with persisted `.pt` outputs. Expensive embeddings are computed once and reused.
 
 - **Representation-first workflow**  
     Samples are incrementally enriched (`dense_map → esm_residue_emb → vit_struct_emb`), enabling partial recomputation without full pipeline resets.
@@ -34,7 +34,7 @@ Lattice3 is built as a **stage-decoupled system with materialized representation
     MLflow experiments are split per component, allowing clear attribution of performance gains.
 
 - **Profiled inference DAG**  
-    Latency is logged per stage (`preprocess / vit / protbert / graph`), exposing true bottlenecks.
+    Latency is logged per stage (`preprocess / vit / bert / graph`), exposing true bottlenecks.
 
 - **Failure isolation**  
     Errors are tagged by stage, avoiding end-to-end debugging ambiguity.
@@ -83,20 +83,11 @@ The reason I engineered this tri-modal architectue: -
 
 
 ### Misc information: -
-
-| Component | Configuration | Purpose |
-| :--- | :--- | :--- |
-| **(BERT)Sequence Encoder** | HuggingFace `ProtBERT` ( FP16, Max Len: 1024 ) | Acts as a frozen language model to extract per-residue features from raw FASTA sequences. |
-| **(ViT)Structural Encoder** | timm `vit_small_patch16_224` | Processes dense contact maps to generate a global 320-dimensional structural embedding. |
-| **(TransformerConv) Graph Transformer** | PyG `GPSConv` ( 2 Layers ) + `SAGEConv` | Captures topological layout using sparse maps (edges) and ProtBERT embeddings (nodes) to produce a 320-dim graph embedding. |
-| **Multimodal Fusion** | `nn.MultiheadAttention` ( dim=320, heads=4 ) | Cross-queries the topological graph representation (Query) against the structural ViT embedding (Key/Value). |
-| **Classifier output** | Linear FFN ( dropout=0.118, out_features=4 ) | Maps the fused 320-dimensional multimodal representation to the final 4-class protein fold logits. |
-
-1. System used: i7-13650HX, RTX4060 8GB GPU
-2. Execution time (whole pipeline excluding downloads): 25-34 mins; 2-5s (single protein)  
-3. Memory footprint: 42MB (esm) + 84MB (ViT-small) + 10MB(custom Graph model) = 152MB
-4. Parameter sizes: -
-   
+   1. System used: i7-13650HX, RTX4060 8GB GPU
+   2. Execution time (whole pipeline excluding downloads): 25-34 mins; 2-5s (single protein)  
+   3. Memory footprint: 42MB (esm) + 84MB (ViT-small) + 10MB(custom Graph model) = 152MB
+   4. Parameter sizes: -
+      
 | Component | Model | Params |
 |----------|------|--------|
 | **Sequence Encoder** | facebook/esm2_t6_8M_UR50D | ~8M|
@@ -104,5 +95,5 @@ The reason I engineered this tri-modal architectue: -
 | **Graph Transformer** | GPSConv (2 layers + SAGEConv) | ~1–3M |
 | **Fusion Layer** | MultiheadAttention (320 dim, 4 heads) | ~0.4M | 
 | **Classifier Head** | FFN (320 → 4) | ~1K | 
-| **Total** | | 450M 
+| **Total** | | 33M 
 
