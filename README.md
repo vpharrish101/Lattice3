@@ -99,7 +99,7 @@ The reason I engineered this tri-modal architectue: -
    
 | Component | Model | Params |
 |----------|------|--------|
-| **Sequence Encoder** | ProtBERT (BERT-base style) | ~420M|
+| **Sequence Encoder** | facebook/esm2_t6_8M_UR50D | ~8M|
 | **Structural Encoder** | ViT-Small (`vit_small_patch16_224`) | ~22M |
 | **Graph Transformer** | GPSConv (2 layers + SAGEConv) | ~1–3M |
 | **Fusion Layer** | MultiheadAttention (320 dim, 4 heads) | ~0.4M | 
