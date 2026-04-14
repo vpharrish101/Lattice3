@@ -31,21 +31,15 @@ Lattice3 is built as a **stage-decoupled system with materialized representation
     Samples are incrementally enriched (`dense_map → esm_residue_emb → vit_struct_emb`), enabling partial recomputation without full pipeline resets.
 
 - **Stage-aligned tracking**  
-    MLflow experiments are split per component, allowing clear attribution of performance gains.
-
-- **Profiled inference DAG**  
-    Latency is logged per stage (`preprocess / vit / bert / graph`), exposing true bottlenecks.
+    MLflow experiments are split per component, allowing clear attribution of performance gains, and latency is logged per stage (`preprocess / vit / bert / graph`), exposing true bottlenecks.
 
 - **Failure isolation**  
-    Errors are tagged by stage, avoiding end-to-end debugging ambiguity.
-
-- **Config-driven reproducibility**  
-    All stages are governed by config (`load_cfg`) for consistent reruns.
+    Errors are tagged by stage, avoiding end-to-end debugging ambiguity and all stages are governed by config (`load_cfg`) for consistent reruns.
 
 - **Bounded data construction**  
     Graph inputs are constrained (`MAX_RESIDUES`, `DIST_THRESHOLD`, `EDGE_CAP`) to stabilize input distributions.
 
-> Result: ~450M parameter system, operationally lightweight—modular, cache-efficient, and easy to debug.
+> Result: ~34M parameter system, operationally lightweight&modular, cache-efficient, and easy to debug.
 ### Structure Dynamics: -
 
 ```
