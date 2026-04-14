@@ -27,9 +27,6 @@ GraphTFConv:
   loss: "CrossEntropyLoss"
 
 
-# ------------------------
-# ProtBERT (ESM2)
-# ------------------------
 ProtBERT:
   model_name: "facebook/esm2_t6_8M_UR50D"
   model_cache_dir: "models"
@@ -44,9 +41,7 @@ ProtBERT:
   autocast_dtype: "float16"
 
 
-# ------------------------
-# ViT Embedding
-# ------------------------
+
 ViT_embed:
   checkpoint: "models/ViT_finetuned.pt"
   data_root: "src/data"
@@ -55,9 +50,7 @@ ViT_embed:
     batch_size: 32
 
 
-# ------------------------
-# ViT Training
-# ------------------------
+
 ViT_train:
   epochs: 5
   data_root: "src/data"
@@ -80,9 +73,7 @@ ViT_train:
   projection_dim: 320
 
 
-# ------------------------
-# Engine Config
-# ------------------------
+
 Engine:
   global:
     max_len: 1024
@@ -101,9 +92,7 @@ Engine:
     norm_type: "layer_norm"
 
 
-# ------------------------
-# Data + Graph Utils
-# ------------------------
+
 DataUtils:
   graph:
     dist_threshold: 8.0
@@ -112,9 +101,6 @@ DataUtils:
     granularity: "CA"
 
 
-# ------------------------
-# Preprocessing
-# ------------------------
 Preprocessor:
   graph:
     dist_threshold: 8.0
